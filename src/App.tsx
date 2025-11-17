@@ -1,10 +1,12 @@
 import "./App.css";
-import { JournalingEditor } from "./journal/JournalingEditor";
+import { Toolbar } from "./components/Toolbar";
+import { CanvasOverview } from "./canvas/CanvasOverview";
 
 function App() {
   return (
     <main className="app-shell">
-      <JournalingEditor />
+      <Toolbar />
+      <CanvasOverview />
     </main>
   );
 }
