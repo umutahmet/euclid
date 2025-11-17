@@ -1,69 +1,28 @@
-# React + TypeScript + Vite
+# **Euclid**
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+_A holistic, AI-powered writing system built on Cloudflare._
 
-Currently, two official plugins are available:
+**Euclid** turns everyday journaling into structured, publishable content.
+You write in your own space, the system learns your voice, and the AI branches off ideas into drafts for multiple platforms — all visualised on an infinite canvas where you can drag, connect, and evolve your thinking.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### **Core Features**
 
-## Expanding the ESLint configuration
+- Daily journaling with automatic semantic indexing
+- Personal voice model that adapts as you edit
+- Multi-platform content generation (LinkedIn, X, Instagram, Medium, scripts)
+- Infinite canvas for navigating ideas, drafts, and branches
+- Cloudflare-native stack: Workers, D1, KV, R2, AI Bindings, AutoRAG
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### **How It Works**
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. Write a journal entry.
+2. Euclid indexes it, updates your voice model, and places it on the canvas.
+3. Generate content branches for any platform.
+4. Edit the drafts — Euclid learns from your changes.
+5. Link, fork, and grow your ideas across the canvas.
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+A tool for writers, founders, and creators who want their thinking to flow naturally into finished content.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+If you want, I can also add installation steps, a short origin story, or a technical overview.

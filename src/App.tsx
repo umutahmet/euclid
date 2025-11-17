@@ -1,10 +1,11 @@
 import "./App.css";
+import { JournalingEditor } from "./journal/JournalingEditor";
 
 function App() {
   return (
-    <>
-      <h1>Hello Euclid</h1>
-    </>
+    <main className="app-shell">
+      <JournalingEditor />
+    </main>
   );
 }
 

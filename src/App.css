@@ -1,0 +1,16 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 4rem 1.5rem 5rem;
+  box-sizing: border-box;
+  background: radial-gradient(circle at top, hsl(224 100% 96%) 0%, transparent 55%),
+    linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 40% 96%) 60%, hsl(0 0% 100%) 100%);
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding: 2rem 1rem 3rem;
+  }
+}
