@@ -8,7 +8,7 @@ This document tracks planned frontend work with checkboxes for progress updates.
 - [x] Hook basic generation controls (platform selector, submit flow) into the journal panel.
 - [x] Render the canvas overview (grid background, empty state, basic node placement).
 - [x] Convert the journaling experience into a canvas element so the entire surface (entries, drafts, controls) lives inside the map.
-- [ ] Implement node detail drawer with connections to journal drafts and AI outputs.
+- [x] Implement node detail drawer with connections to journal drafts and AI outputs.
 - [ ] Surface simple voice summary + tweak controls; wire edits to the preview state.
 
 ## 2. Canvas & Interaction Mechanics

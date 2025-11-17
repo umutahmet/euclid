@@ -14,6 +14,12 @@ Write modern TypeScript and React function components. Follow two-space indentat
 
 **Component Strategy:** Strictly use shadcn/ui components (`src/components/ui/`) as the primary building blocks for all UI elements. Install new shadcn components via `npx shadcn@latest add <component>` when needed. Manually creating components is a last resort reserved only for truly custom domain-specific widgets that have no shadcn equivalent. Prefer Tailwind 4 utilities for layout; when cascading styles are unavoidable, scope them to the component's `.css`. Keep modules under ~200 lines by extracting helpers into `src/lib` as needed.
 
+**DRY & KISS Principles:**
+
+- **Don't Repeat Yourself (DRY):** Extract shared types to `src/types/`, reusable utilities to `src/lib/`, static data to `src/lib/data/`, and constants to `src/lib/constants/`. Avoid duplicating type definitions, business logic, or configuration across files.
+- **Keep It Simple, Stupid (KISS):** Favor simple, readable solutions over clever abstractions. Break complex logic into small, single-purpose functions. Each file should have one clear responsibility. Prefer explicit imports over barrel exports to maintain clarity.
+- **Organization:** Types live in `src/types/*.ts`, shared utilities in `src/lib/*.ts`, static/mock data in `src/lib/data/*.ts`, constants and enums in `src/lib/constants/*.ts`, and domain components in their feature folders (`src/canvas`, `src/journal`, etc.). Keep related code colocated but extract for reuse when needed.
+
 ## Testing Guidelines
 
 Automated tests are not wired up, so logic-heavy contributions should also introduce Vitest and a `pnpm test` script. Place unit tests in `src/__tests__` or next to the component as `Name.test.tsx`, and assert user-facing behavior through React Testing Library. Mock Worker calls with lightweight fetch stubs. Aim for 25% coverage on new modules and document any manual QA steps (browsers exercised, Worker endpoints hit) in the PR description.

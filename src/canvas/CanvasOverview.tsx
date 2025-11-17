@@ -1,95 +1,29 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { LinkIcon, Workflow, Plus } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { JournalingEditor } from "@/journal/JournalingEditor";
-
-type CanvasNodeType = "journal" | "ai-draft" | "idea";
-
-type CanvasNode = {
-  id: string;
-  title: string;
-  summary: string;
-  status: string;
-  type: CanvasNodeType;
-  x: number;
-  y: number;
-  highlight?: boolean;
-  variant?: "surface" | "default";
-  surfaceWidthRem?: number;
-};
-
-type CanvasLink = {
-  id: string;
-  from: CanvasNode["id"];
-  to: CanvasNode["id"];
-};
-
-const nodePalette: Record<CanvasNodeType, string> = {
-  journal: "from-sky-50/90 to-white border-sky-200 text-sky-900",
-  "ai-draft": "from-violet-50/90 to-white border-violet-200 text-violet-900",
-  idea: "from-amber-50/90 to-white border-amber-200 text-amber-900",
-};
-
-const sampleNodes: CanvasNode[] = [
-  {
-    id: "node-journal",
-    title: "Journal surface",
-    summary: "Canvas-native writing + drafting",
-    status: "Live",
-    type: "journal",
-    x: 35,
-    y: 58,
-    highlight: true,
-    variant: "surface",
-    surfaceWidthRem: 58,
-  },
-  {
-    id: "node-linkedin",
-    title: "LinkedIn draft",
-    summary: "Highlights focus sprints + leadership notes.",
-    status: "AI draft · Needs review",
-    type: "ai-draft",
-    x: 74,
-    y: 24,
-  },
-  {
-    id: "node-thread",
-    title: "Thread branch",
-    summary: "Break entry into 5-s part mini-insights.",
-    status: "Manual tweaks in progress",
-    type: "idea",
-    x: 78,
-    y: 66,
-  },
-  {
-    id: "node-voice",
-    title: "Voice summary",
-    summary: "Warm + direct tone kit synced last night.",
-    status: "Voice profile ready",
-    type: "ai-draft",
-    x: 20,
-    y: 25,
-  },
-];
-
-const sampleLinks: CanvasLink[] = [
-  { id: "link-journal-linkedin", from: "node-journal", to: "node-linkedin" },
-  { id: "link-journal-thread", from: "node-journal", to: "node-thread" },
-];
+import { NodeDetailDrawer } from "./NodeDetailDrawer";
+import type { CanvasNode } from "@/types/canvas";
+import { sampleNodes, sampleLinks } from "@/lib/data/canvas-mock";
+import { nodePalette } from "@/lib/constants/canvas";
+import { createNodeMap } from "@/lib/canvas-utils";
 
 export function CanvasOverview() {
   const nodes = sampleNodes;
   const hasNodes = nodes.length > 0;
 
-  const nodeMap = useMemo(() => {
-    return nodes.reduce<Record<string, CanvasNode>>((acc, node) => {
-      acc[node.id] = node;
-      return acc;
-    }, {});
-  }, [nodes]);
+  const [selectedNode, setSelectedNode] = useState<CanvasNode | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const nodeMap = useMemo(() => createNodeMap(nodes), [nodes]);
+
+  const handleNodeClick = (node: CanvasNode) => {
+    setSelectedNode(node);
+    setDrawerOpen(true);
+  };
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-gradient-to-br from-[#f5f8ff] via-white to-[#f3f1ff]">
@@ -185,11 +119,12 @@ export function CanvasOverview() {
                     key={node.id}
                     style={{ left: `${node.x}%`, top: `${node.y}%` }}
                     className={cn(
-                      "absolute w-[15rem] -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-gradient-to-b p-5 text-left shadow-xl shadow-slate-500/30 ring-1 ring-white/50 backdrop-blur-sm transition-all",
+                      "absolute w-[15rem] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-2xl border bg-gradient-to-b p-5 text-left shadow-xl shadow-slate-500/30 ring-1 ring-white/50 backdrop-blur-sm transition-all hover:scale-105 hover:shadow-2xl",
                       nodePalette[node.type],
                       node.highlight &&
                         "ring-4 ring-primary/30 ring-offset-2 ring-offset-white"
                     )}
+                    onClick={() => handleNodeClick(node)}
                   >
                     <div className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-slate-400/90">
                       <Workflow className="h-3.5 w-3.5" />
@@ -251,6 +186,15 @@ export function CanvasOverview() {
           <span>100%</span>
         </div>
       </div>
+
+      {/* Node Detail Drawer */}
+      <NodeDetailDrawer
+        node={selectedNode}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        connectedNodes={nodes}
+        links={sampleLinks}
+      />
     </div>
   );
 }
