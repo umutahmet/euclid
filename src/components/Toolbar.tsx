@@ -12,6 +12,8 @@ import {
   Share2,
   Play,
   ChevronDown,
+  Minus,
+  Plus,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,9 +21,12 @@ import { cn } from "@/lib/utils";
 
 interface ToolbarProps {
   className?: string;
+  zoom: number;
+  setZoom: (zoom: number) => void;
+  onNewNode?: () => void;
 }
 
-export function Toolbar({ className }: ToolbarProps) {
+export function Toolbar({ className, zoom, setZoom, onNewNode }: ToolbarProps) {
   return (
     <header
       className={cn(
@@ -103,6 +108,41 @@ export function Toolbar({ className }: ToolbarProps) {
 
       {/* Right section - Actions */}
       <div className="flex items-center gap-2">
+        {/* Zoom Controls */}
+        <div className="flex items-center rounded-lg border border-slate-200 bg-white shadow-sm mr-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-none border-r border-slate-100 hover:bg-slate-50"
+            onClick={() => setZoom(Math.max(zoom - 0.1, 0.1))}
+          >
+            <Minus className="h-3.5 w-3.5 text-slate-500" />
+          </Button>
+          <span className="w-12 text-center text-xs font-medium text-slate-600">
+            {Math.round(zoom * 100)}%
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-none border-l border-slate-100 hover:bg-slate-50"
+            onClick={() => setZoom(Math.min(zoom + 0.1, 5))}
+          >
+            <Plus className="h-3.5 w-3.5 text-slate-500" />
+          </Button>
+        </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 rounded-lg border-slate-200 bg-white px-3 shadow-sm hover:bg-slate-50 mr-2"
+          onClick={onNewNode}
+        >
+          <Plus className="h-3.5 w-3.5" />
+          New node
+        </Button>
+
+        <div className="mx-1 h-5 w-px bg-border" />
+
         <Button variant="ghost" size="icon" className="h-8 w-8">
           <Search className="h-4 w-4" />
         </Button>

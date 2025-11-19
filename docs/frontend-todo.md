@@ -9,14 +9,14 @@ This document tracks planned frontend work with checkboxes for progress updates.
 - [x] Render the canvas overview (grid background, empty state, basic node placement).
 - [x] Convert the journaling experience into a canvas element so the entire surface (entries, drafts, controls) lives inside the map.
 - [x] Implement node detail drawer with connections to journal drafts and AI outputs.
-- [ ] Surface simple voice summary + tweak controls; wire edits to the preview state.
+- [ ] Surface simple voice summary + tweak controls via a dialog; wire edits to the preview state.
 
 ## 2. Canvas & Interaction Mechanics
 
-- [ ] Add drag-and-drop + pan handlers for canvas navigation (mouse + touch).
-- [ ] Layer mini-map + jump controls when the node graph exceeds viewport bounds.
+- [x] Add drag-and-drop + pan handlers for canvas navigation (mouse + touch).
+- [x] Layer mini-map + jump controls when the node graph exceeds viewport bounds.
 - [ ] Introduce branching controls that let users fork a node into a new idea stream.
-- [ ] Animate node transitions when content updates or canvas zoom changes.
+- [x] Animate node transitions when content updates or canvas zoom changes.
 
 ## 3. Data & Integrations
 

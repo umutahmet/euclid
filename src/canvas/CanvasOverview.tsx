@@ -1,193 +1,118 @@
-import { useMemo, useState } from "react";
-import { LinkIcon, Workflow, Plus } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { LinkIcon } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { JournalingEditor } from "@/journal/JournalingEditor";
 import { NodeDetailDrawer } from "./NodeDetailDrawer";
-import type { CanvasNode } from "@/types/canvas";
-import { sampleNodes, sampleLinks } from "@/lib/data/canvas-mock";
-import { nodePalette } from "@/lib/constants/canvas";
-import { createNodeMap } from "@/lib/canvas-utils";
+import { sampleLinks } from "@/lib/data/canvas-mock";
 
-export function CanvasOverview() {
-  const nodes = sampleNodes;
+import { useCanvasState } from "./hooks/useCanvasState";
+import { useCanvasInteractions } from "./hooks/useCanvasInteractions";
+import { CanvasGrid } from "./components/CanvasGrid";
+import { CanvasStatusBar } from "./components/CanvasStatusBar";
+import { CanvasNodeItem } from "./components/CanvasNodeItem";
+import { CanvasLinks } from "./components/CanvasLinks";
+
+interface CanvasOverviewProps {
+  canvasState: ReturnType<typeof useCanvasState>;
+}
+
+export function CanvasOverview({ canvasState }: CanvasOverviewProps) {
+  const {
+    nodes,
+    setNodes,
+    view,
+    setView,
+    selectedNode,
+    setSelectedNode,
+    drawerOpen,
+    setDrawerOpen,
+    nodeMap,
+  } = canvasState;
+
+  // Interactions
+  const {
+    handleWheel,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleNodeClick,
+  } = useCanvasInteractions({
+    view,
+    setView,
+    nodes,
+    setNodes,
+    setSelectedNode,
+    setDrawerOpen,
+  });
+
+  const containerRef = useRef<HTMLDivElement>(null);
   const hasNodes = nodes.length > 0;
 
-  const [selectedNode, setSelectedNode] = useState<CanvasNode | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  const nodeMap = useMemo(() => createNodeMap(nodes), [nodes]);
-
-  const handleNodeClick = (node: CanvasNode) => {
-    setSelectedNode(node);
-    setDrawerOpen(true);
-  };
+  // Center view on mount
+  useEffect(() => {
+    if (containerRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        setView({ x: width / 2 - 1000, y: height / 2 - 1000, zoom: 1 });
+    }
+  }, [setView]);
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-gradient-to-br from-[#f5f8ff] via-white to-[#f3f1ff]">
-      {/* Canvas controls floating top-right */}
-      <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1.5 rounded-lg border-slate-200/80 bg-white/90 px-3 shadow-sm backdrop-blur-sm"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          New node
-        </Button>
-      </div>
-
+    <div className="flex h-full w-full flex-col overflow-hidden bg-slate-50/50">
       {/* Main canvas area */}
-      <div className="relative h-full w-full overflow-hidden">
-        {/* Grid background */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          aria-hidden
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(148, 163, 184, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.15) 1px, transparent 1px)",
-            backgroundSize: "72px 72px",
-          }}
-        />
+      <div
+        ref={containerRef}
+        className="relative h-full w-full overflow-hidden cursor-grab active:cursor-grabbing"
+        onMouseDown={(e) => handleMouseDown(e)}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
+      >
+        <CanvasGrid view={view} />
 
-        {/* Gradient overlays */}
+        {/* Canvas content container with transform */}
         <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/80 via-transparent to-white/80"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute left-1/2 top-20 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-primary/15 blur-3xl"
-          aria-hidden
-        />
-
-        {/* Canvas content */}
-        <div className="relative z-10 h-full w-full px-6 py-8 lg:px-10 lg:py-12">
+            className="absolute left-0 top-0 origin-top-left will-change-transform"
+            style={{
+                transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`,
+            }}
+        >
           {hasNodes ? (
-            <div className="relative h-full w-full">
-              <svg
-                className="pointer-events-none absolute inset-0 h-full w-full"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-              >
-                {sampleLinks.map((link) => {
-                  const from = nodeMap[link.from];
-                  const to = nodeMap[link.to];
-                  if (!from || !to) {
-                    return null;
-                  }
+            <>
+              <CanvasLinks links={sampleLinks} nodeMap={nodeMap} />
 
-                  return (
-                    <line
-                      key={link.id}
-                      x1={from.x}
-                      y1={from.y}
-                      x2={to.x}
-                      y2={to.y}
-                      stroke="rgba(79,70,229,0.35)"
-                      strokeWidth={0.6}
-                      strokeLinecap="round"
-                      strokeDasharray="6 6"
-                    />
-                  );
-                })}
-              </svg>
-
-              {nodes.map((node) => {
-                if (node.variant === "surface") {
-                  return (
-                    <div
-                      key={node.id}
-                      style={{
-                        left: `${node.x}%`,
-                        top: `${node.y}%`,
-                        width: `min(${node.surfaceWidthRem ?? 48}rem, 92vw)`,
-                      }}
-                      className="pointer-events-auto absolute z-10 -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_35px_70px_rgba(15,23,42,0.25)]"
-                    >
-                      <JournalingEditor
-                        variant="canvas"
-                        className="border-white/60"
-                      />
-                    </div>
-                  );
-                }
-
-                return (
-                  <article
-                    key={node.id}
-                    style={{ left: `${node.x}%`, top: `${node.y}%` }}
-                    className={cn(
-                      "absolute w-[15rem] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-2xl border bg-gradient-to-b p-5 text-left shadow-xl shadow-slate-500/30 ring-1 ring-white/50 backdrop-blur-sm transition-all hover:scale-105 hover:shadow-2xl",
-                      nodePalette[node.type],
-                      node.highlight &&
-                        "ring-4 ring-primary/30 ring-offset-2 ring-offset-white"
-                    )}
-                    onClick={() => handleNodeClick(node)}
-                  >
-                    <div className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-slate-400/90">
-                      <Workflow className="h-3.5 w-3.5" />
-                      {node.type === "journal" && "Journal"}
-                      {node.type === "ai-draft" && "AI draft"}
-                      {node.type === "idea" && "Branch"}
-                    </div>
-                    <p className="mt-2 text-base font-semibold leading-tight text-slate-900">
-                      {node.title}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      {node.summary}
-                    </p>
-                    <p className="mt-4 text-xs font-medium text-slate-500">
-                      {node.status}
-                    </p>
-                  </article>
-                );
-              })}
-            </div>
+              {nodes.map((node) => (
+                <CanvasNodeItem
+                  key={node.id}
+                  node={node}
+                  isSelected={selectedNode?.id === node.id}
+                  onMouseDown={handleMouseDown}
+                  onClick={handleNodeClick}
+                />
+              ))}
+            </>
           ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-6 text-center">
-              <div className="rounded-full bg-primary/10 p-4 text-primary">
+            <div className="flex h-full flex-col items-center justify-center gap-6 text-center pt-40">
+              <div className="rounded-full bg-slate-100 p-4 text-slate-400">
                 <LinkIcon className="h-6 w-6" />
               </div>
               <div className="space-y-1">
-                <p className="text-2xl font-semibold text-slate-900">
-                  No nodes yet
+                <p className="text-lg font-medium text-slate-900">
+                  Canvas is empty
                 </p>
-                <p className="text-base text-slate-600">
-                  Add your first journal entry to seed the canvas and unlock AI
-                  ideas.
+                <p className="text-sm text-slate-500">
+                  Start by creating a new node
                 </p>
               </div>
-              <Button className="rounded-full px-8 py-3 text-base">
-                Start mapping
-              </Button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Bottom status bar */}
-      <div className="flex h-10 items-center justify-between border-t border-border bg-background px-4 text-xs text-muted-foreground">
-        <div className="flex items-center gap-4">
-          <Badge
-            variant="secondary"
-            className="rounded-md bg-slate-100/80 px-2 py-0.5 text-[10px] uppercase tracking-wider text-slate-700"
-          >
-            Canvas
-          </Badge>
-          <span>Idea map</span>
-        </div>
-        <div>
-          The overview refreshes whenever journaling entries are saved or new
-          drafts are generated.
-        </div>
-        <div className="flex items-center gap-2">
-          <span>100%</span>
-        </div>
-      </div>
+      <CanvasStatusBar
+        nodeCount={nodes.length}
+        onResetView={() => setView({ x: 0, y: 0, zoom: 1 })}
+      />
 
-      {/* Node Detail Drawer */}
       <NodeDetailDrawer
         node={selectedNode}
         open={drawerOpen}
@@ -198,3 +123,4 @@ export function CanvasOverview() {
     </div>
   );
 }
+

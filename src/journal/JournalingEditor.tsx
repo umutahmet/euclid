@@ -411,7 +411,7 @@ export function JournalingEditor({ variant = "default", className }: JournalingE
                   aria-pressed={isActive}
                   onClick={() => setTargetPlatformId(option.id)}
                   className={cn(
-                    "h-auto w-full flex-col items-start gap-1.5 rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-left shadow-sm transition-all",
+                    "h-auto w-full flex-col items-start gap-1.5 rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-left shadow-sm ",
                     isActive
                       ? "border-primary/60 bg-primary/5 text-slate-900 shadow-primary/20"
                       : "text-slate-600 hover:border-primary/40 hover:text-slate-900",
