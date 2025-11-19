@@ -69,42 +69,23 @@ export function CanvasOverview({ canvasState }: CanvasOverviewProps) {
       >
         <CanvasGrid view={view} />
 
-        {/* Canvas content container with transform */}
         <div
             className="absolute left-0 top-0 origin-top-left will-change-transform"
             style={{
                 transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`,
             }}
         >
-          {hasNodes ? (
-            <>
-              <CanvasLinks links={sampleLinks} nodeMap={nodeMap} />
+            <CanvasLinks links={[]} nodeMap={nodeMap} />
 
-              {nodes.map((node) => (
-                <CanvasNodeItem
-                  key={node.id}
-                  node={node}
-                  isSelected={selectedNode?.id === node.id}
-                  onMouseDown={handleMouseDown}
-                  onClick={handleNodeClick}
-                />
-              ))}
-            </>
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-6 text-center pt-40">
-              <div className="rounded-full bg-slate-100 p-4 text-slate-400">
-                <LinkIcon className="h-6 w-6" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-lg font-medium text-slate-900">
-                  Canvas is empty
-                </p>
-                <p className="text-sm text-slate-500">
-                  Start by creating a new node
-                </p>
-              </div>
-            </div>
-          )}
+            {nodes.map((node) => (
+            <CanvasNodeItem
+                key={node.id}
+                node={node}
+                isSelected={selectedNode?.id === node.id}
+                onMouseDown={handleMouseDown}
+                onClick={handleNodeClick}
+            />
+            ))}
         </div>
       </div>
 

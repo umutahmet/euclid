@@ -17,6 +17,7 @@ export type CanvasNode = {
   highlight?: boolean;
   variant?: "surface" | "default";
   surfaceWidthRem?: number;
+  content?: string;
 };
 
 export type CanvasLink = {

@@ -20,7 +20,6 @@ This document tracks planned frontend work with checkboxes for progress updates.
 
 ## 3. Data & Integrations
 
-- [ ] Build adaptive tone learning system that analyzes user writing patterns and usage to automatically match their voice.
 - [ ] Implement Worker API client with fetch handlers for journaling, voice, and AI endpoints; include error boundaries and retry logic.
 - [ ] Integrate Cloudflare D1 persistence for nodes and generations with optimistic UI updates and conflict resolution.
 - [ ] Surface AutoRAG summaries and suggested prompts alongside the canvas.
@@ -28,6 +27,7 @@ This document tracks planned frontend work with checkboxes for progress updates.
 
 ## 4. Polishing & Quality
 
+- [ ] Build adaptive tone learning system that analyzes user writing patterns and usage to automatically match their voice.
 - [ ] Define Tailwind theme tokens for spacing, colors, and typography shared across modules.
 - [ ] Audit accessibility (focus states, labels) of newly built controls.
 - [ ] Write focused Vitest suites for the journaling editor and canvas helpers.

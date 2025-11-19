@@ -42,35 +42,7 @@ const formattingOptions: FormattingOption[] = [
   { id: "bullet", label: "List", type: "prefix", prefix: "- ", placeholder: "List item" },
 ];
 
-type GenerationStatus = "idle" | "pending" | "success" | "error";
 
-type PlatformOption = {
-  id: "linkedin" | "twitter" | "instagram";
-  label: string;
-  summary: string;
-  tone: string;
-};
-
-const platformOptions: PlatformOption[] = [
-  {
-    id: "linkedin",
-    label: "LinkedIn spotlight",
-    summary: "Polished recap for long-form, thoughtful feeds.",
-    tone: "Professional warmth",
-  },
-  {
-    id: "twitter",
-    label: "X thread",
-    summary: "Rapid-fire takeaways for scroll-stopping snippets.",
-    tone: "Punchy + direct",
-  },
-  {
-    id: "instagram",
-    label: "Instagram caption",
-    summary: "Digestible story beats to pair with visuals.",
-    tone: "Conversational + bright",
-  },
-];
 
 const relativeTime = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 
@@ -111,21 +83,16 @@ const countWords = (value: string) => {
 type JournalingEditorProps = {
   variant?: "default" | "canvas";
   className?: string;
+  initialContent?: string;
 };
 
-export function JournalingEditor({ variant = "default", className }: JournalingEditorProps) {
+export function JournalingEditor({ variant = "default", className, initialContent = "" }: JournalingEditorProps) {
   const isCanvasVariant = variant === "canvas";
-  const [entry, setEntry] = useState("");
+  const [entry, setEntry] = useState(initialContent);
   const [status, setStatus] = useState<JournalingStatus>("saved");
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const saveHandle = useRef<number | null>(null);
-  const generationHandle = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [targetPlatformId, setTargetPlatformId] = useState<PlatformOption["id"]>(platformOptions[0].id);
-  const [generationStatus, setGenerationStatus] = useState<GenerationStatus>("idle");
-  const [generationError, setGenerationError] = useState<string | null>(null);
-  const [lastQueuedAt, setLastQueuedAt] = useState<Date | null>(null);
-  const [lastQueuedPlatformId, setLastQueuedPlatformId] = useState<PlatformOption["id"] | null>(null);
 
   const queueSave = useCallback(() => {
     if (saveHandle.current) {
@@ -146,38 +113,8 @@ export function JournalingEditor({ variant = "default", className }: JournalingE
       if (saveHandle.current) {
         window.clearTimeout(saveHandle.current);
       }
-      if (generationHandle.current) {
-        window.clearTimeout(generationHandle.current);
-      }
     };
   }, []);
-
-  const selectedPlatform = useMemo(
-    () => platformOptions.find((option) => option.id === targetPlatformId) ?? platformOptions[0],
-    [targetPlatformId],
-  );
-
-  const lastQueuedPlatform = useMemo(
-    () => (lastQueuedPlatformId ? platformOptions.find((option) => option.id === lastQueuedPlatformId) ?? null : null),
-    [lastQueuedPlatformId],
-  );
-
-  useEffect(() => {
-    if (generationStatus !== "success") {
-      return;
-    }
-
-    const timeout = window.setTimeout(() => setGenerationStatus("idle"), 3200);
-
-    return () => window.clearTimeout(timeout);
-  }, [generationStatus]);
-
-  useEffect(() => {
-    if (entry.trim() && generationStatus === "error") {
-      setGenerationStatus("idle");
-      setGenerationError(null);
-    }
-  }, [entry, generationStatus]);
 
   const applyFormatting = (option: FormattingOption) => {
     const textarea = textareaRef.current;
@@ -239,32 +176,6 @@ export function JournalingEditor({ variant = "default", className }: JournalingE
     queueSave();
   };
 
-  const handleGenerationSubmit = useCallback(() => {
-    if (generationStatus === "pending") {
-      return;
-    }
-
-    if (!entry.trim()) {
-      setGenerationStatus("error");
-      setGenerationError("Add a few lines to your journal before generating a draft.");
-      return;
-    }
-
-    setGenerationStatus("pending");
-    setGenerationError(null);
-
-    if (generationHandle.current) {
-      window.clearTimeout(generationHandle.current);
-    }
-
-    generationHandle.current = window.setTimeout(() => {
-      setGenerationStatus("success");
-      setLastQueuedAt(new Date());
-      setLastQueuedPlatformId(selectedPlatform.id);
-      generationHandle.current = null;
-    }, 1200);
-  }, [entry, generationStatus, selectedPlatform.id]);
-
   const wordCount = useMemo(() => countWords(entry), [entry]);
 
   const statusLabel = useMemo(() => {
@@ -290,54 +201,6 @@ export function JournalingEditor({ variant = "default", className }: JournalingE
 
     return <Dot className="h-5 w-5 text-muted-foreground" />;
   }, [lastSavedAt, status]);
-
-  const generationStatusLabel = useMemo(() => {
-    if (generationStatus === "pending") {
-      return "Sending to AI…";
-    }
-
-    if (generationStatus === "error") {
-      return "Entry required";
-    }
-
-    if (generationStatus === "success" && lastQueuedAt && lastQueuedPlatform) {
-      return `Queued ${formatRelativeTime(lastQueuedAt)}`;
-    }
-
-    return "Ready to draft";
-  }, [generationStatus, lastQueuedAt, lastQueuedPlatform]);
-
-  const generationHint = useMemo(() => {
-    if (generationStatus === "error" && generationError) {
-      return generationError;
-    }
-
-    if (generationStatus === "pending") {
-      return `Blending your entry for ${selectedPlatform.label}…`;
-    }
-
-    if (lastQueuedAt && lastQueuedPlatform) {
-      return `Queued ${lastQueuedPlatform.label} ${formatRelativeTime(lastQueuedAt)}.`;
-    }
-
-    if (entry.trim()) {
-      return `Will use ${wordCount} words from today when you queue a ${selectedPlatform.label} draft.`;
-    }
-
-    return "Start writing above to enable AI drafts.";
-  }, [entry, generationError, generationStatus, lastQueuedAt, lastQueuedPlatform, selectedPlatform.label, wordCount]);
-
-  const handleTextareaKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-        event.preventDefault();
-        handleGenerationSubmit();
-      }
-    },
-    [handleGenerationSubmit],
-  );
-
-  const canSubmitGeneration = entry.trim().length > 0 && generationStatus !== "pending";
 
   return (
     <Card
@@ -381,79 +244,7 @@ export function JournalingEditor({ variant = "default", className }: JournalingE
       <CardContent
         className={cn("space-y-4", isCanvasVariant ? "px-6 pb-6 pt-0 lg:px-8" : undefined)}
       >
-        <section className="space-y-4 rounded-3xl border border-slate-200/80 bg-gradient-to-b from-white via-slate-50 to-white p-4 shadow-inner shadow-white/60 sm:p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                <Sparkles className="h-4 w-4 text-primary" />
-                AI generation
-              </div>
-              <p className="text-base font-semibold text-slate-900">Select a platform and queue a draft.</p>
-              <p className="text-sm text-slate-600">We pair your entry + voice profile before sending it to the worker.</p>
-            </div>
 
-            <Badge
-              variant="outline"
-              className="rounded-full border-dashed border-slate-300 bg-white/80 px-4 py-2 text-[13px] font-medium text-slate-600"
-            >
-              {generationStatusLabel}
-            </Badge>
-          </div>
-
-          <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-            {platformOptions.map((option) => {
-              const isActive = option.id === selectedPlatform.id;
-              return (
-                <Button
-                  key={option.id}
-                  type="button"
-                  variant="outline"
-                  aria-pressed={isActive}
-                  onClick={() => setTargetPlatformId(option.id)}
-                  className={cn(
-                    "h-auto w-full flex-col items-start gap-1.5 rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-left shadow-sm ",
-                    isActive
-                      ? "border-primary/60 bg-primary/5 text-slate-900 shadow-primary/20"
-                      : "text-slate-600 hover:border-primary/40 hover:text-slate-900",
-                  )}
-                >
-                  <span className="text-sm font-semibold">{option.label}</span>
-                  <span className="text-xs text-muted-foreground">{option.summary}</span>
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                    {option.tone}
-                  </span>
-                </Button>
-              );
-            })}
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Button
-              type="button"
-              className="w-full rounded-2xl px-6 py-3 text-base font-semibold sm:w-auto"
-              onClick={handleGenerationSubmit}
-              disabled={!canSubmitGeneration}
-            >
-              {generationStatus === "pending" ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Sending draft…
-                </>
-              ) : (
-                <>Generate for {selectedPlatform.label}</>
-              )}
-            </Button>
-
-            <p
-              className={cn(
-                "text-sm",
-                generationStatus === "error" ? "text-rose-500" : "text-slate-600",
-              )}
-            >
-              {generationHint}
-            </p>
-          </div>
-        </section>
 
         <div className="flex flex-wrap gap-2 rounded-2xl border border-dashed border-muted bg-muted p-3">
           {formattingOptions.map((option) => (
@@ -484,7 +275,7 @@ export function JournalingEditor({ variant = "default", className }: JournalingE
           placeholder="Start journaling…"
           value={entry}
           onChange={handleChange}
-          onKeyDown={handleTextareaKeyDown}
+
           spellCheck
           aria-label="Daily journal entry"
           className="min-h-[20rem] resize-y bg-white text-base leading-relaxed"
@@ -498,10 +289,7 @@ export function JournalingEditor({ variant = "default", className }: JournalingE
         )}
       >
         <span className="font-medium text-slate-700">{wordCount} words</span>
-        <span className="text-xs uppercase tracking-wide text-slate-500">
-          Press <kbd className="rounded-md border bg-white px-1 py-0.5 text-[11px] font-semibold">⌘⏎</kbd>{" "}
-          to queue AI generation
-        </span>
+
       </CardFooter>
     </Card>
   );
